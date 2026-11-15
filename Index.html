@@ -1,0 +1,218 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>تحدّي نشامى الأردن | خريطة المحافظات</title>
+<style>
+:root{--navy:#17345b;--gold:#f4bd42;--cream:#fffaf0;--teal:#1c9b91;--pink:#f17b86}
+*{box-sizing:border-box}
+body{margin:0;font-family:Tahoma,Arial,sans-serif;background:linear-gradient(135deg,#e8f6f4,#fff4d9);color:var(--navy);min-height:100vh}
+header{padding:18px 14px 12px;text-align:center;background:linear-gradient(110deg,#17345b,#245d77);color:white;border-bottom:6px solid var(--gold)}
+h1{margin:0;font-size:clamp(23px,4vw,38px);letter-spacing:.2px}
+header p{margin:7px 0 0;font-size:clamp(13px,2vw,17px);color:#fff1c8}
+.wrap{max-width:1200px;margin:auto;padding:14px}
+.topbar{display:flex;gap:10px;justify-content:center;align-items:center;flex-wrap:wrap;margin:4px 0 14px}
+.pill{background:white;border:2px solid #dce8e4;border-radius:30px;padding:8px 15px;font-weight:bold;box-shadow:0 3px 0 #d8e5df}
+button{font-family:inherit;cursor:pointer}
+.action{border:0;border-radius:22px;padding:10px 17px;font-weight:bold;background:var(--gold);color:#3c2b08;box-shadow:0 4px 0 #d49b26}
+.action.secondary{background:white;color:var(--navy);box-shadow:0 4px 0 #d4e1df}
+.game{display:grid;grid-template-columns:minmax(250px, .85fr) minmax(340px,1.4fr);gap:16px;align-items:stretch}
+.panel{background:rgba(255,255,255,.9);border:2px solid #dce9e3;border-radius:22px;padding:14px;box-shadow:0 8px 20px #17345b12}
+.panel h2{font-size:20px;margin:0 0 10px;text-align:center}
+.hint{text-align:center;color:#60758a;font-size:14px;margin:0 0 12px}
+.cards{display:grid;grid-template-columns:1fr 1fr;gap:9px}
+.card{border:2px solid #e6bd5c;background:#fff8df;border-radius:13px;padding:12px 7px;text-align:center;font-weight:bold;font-size:16px;color:#24445f;box-shadow:0 3px 0 #e7d7ad;touch-action:manipulation;user-select:none}
+.card:active,.card.selected{background:#ffe59a;border-color:#d18c16;transform:translateY(2px);box-shadow:0 1px 0 #e7d7ad}
+.card.done{opacity:.35;text-decoration:line-through;pointer-events:none;background:#e4f5e9;border-color:#8ac59c}
+.map-panel{position:relative;overflow:hidden;background:radial-gradient(circle at 50% 45%,#fff 0,#f4fbf7 68%,#e9f3ee 100%)}
+.map-title{text-align:center;font-size:20px;font-weight:bold;margin:0 0 4px}
+.map-sub{text-align:center;color:#6a8290;font-size:13px;margin:0 0 4px}
+svg{display:block;width:100%;height:auto;max-height:680px;touch-action:manipulation}
+.region{stroke:#fff;stroke-width:4;stroke-linejoin:round;cursor:pointer;transition:filter .15s,fill .2s}
+.region:hover{filter:brightness(1.06)}
+.region.correct{fill:#8bd2a2!important;stroke:#fff;cursor:default}
+.region text{pointer-events:none}
+.zone-label{font-size:13px;font-weight:bold;fill:#24445f;pointer-events:none;text-anchor:middle}
+.country-edge{fill:none;stroke:#214e63;stroke-width:7;stroke-linejoin:round;stroke-linecap:round;pointer-events:none}
+.sea{fill:#c9eaf2;opacity:.7}
+.feedback{min-height:45px;text-align:center;font-weight:bold;font-size:20px;color:#18846f;padding:8px}
+.footer{text-align:center;color:#61778a;font-size:12px;margin:8px 0}
+#confetti{position:fixed;inset:0;pointer-events:none;overflow:hidden;z-index:9}
+.conf{position:absolute;top:-15px;width:9px;height:15px;animation:fall 1.7s linear forwards}
+@keyframes fall{to{transform:translateY(110vh) rotate(650deg);opacity:.2}}
+.modal{display:none;position:fixed;inset:0;background:#10243dcc;z-index:10;align-items:center;justify-content:center;padding:18px}
+.modal.show{display:flex}
+.modalbox{background:#fffaf0;border:5px solid var(--gold);border-radius:26px;padding:28px;text-align:center;max-width:440px;width:100%;box-shadow:0 15px 50px #0004}
+.modalbox h2{font-size:30px;margin:0 0 10px;color:#176c61}
+.modalbox p{font-size:19px;line-height:1.7}
+@media(max-width:760px){.game{grid-template-columns:1fr}.map-panel{order:1}.cards-panel{order:2}.cards{grid-template-columns:repeat(3,1fr)}}
+@media(max-width:420px){.cards{grid-template-columns:repeat(2,1fr)}.card{font-size:14px;padding:10px 4px}}
+</style>
+</head>
+<body>
+<header>
+<h1>🇯🇴 تحدّي نشامى الأردن 🇯🇴</h1>
+<p>اسحبي اسم المحافظة إلى مكانها الصحيح على الخريطة!</p>
+</header>
+<div class="wrap">
+<div class="topbar">
+<span class="pill" id="progress">⭐ 0 من 12</span>
+<span class="pill" id="score">الإجابات الصحيحة: 0</span>
+<button class="action secondary" id="soundBtn">🔊 الصوت والموسيقى يعملان</button>
+<button class="action" id="resetBtn">↻ ابدئي من جديد</button>
+</div>
+<div class="game">
+<section class="panel cards-panel">
+<h2>🎒 بطاقات المحافظات</h2>
+<p class="hint">اختاري بطاقة، ثم اضغطي مكانها على الخريطة. ويمكن سحبها بالماوس.</p>
+<div class="cards" id="cards"></div>
+</section>
+<section class="panel map-panel">
+<p class="map-title">خريطة محافظات المملكة الأردنية الهاشمية</p>
+<p class="map-sub">حددي موقع كل محافظة بالضغط على منطقتها</p>
+<svg viewBox="0 0 520 690" role="img" aria-label="خريطة تعليمية مبسطة لمحافظات الأردن">
+<path class="sea" d="M20 245 Q45 300 35 390 Q30 465 62 520 L82 480 Q65 400 77 330 L58 260Z"/>
+<!-- Simplified educational arrangement of the 12 governorates -->
+<g id="mapRegions">
+<path class="region" data-id="irbid" fill="#f6cf72" d="M145 42 L285 48 L300 108 L255 145 L180 137 L128 105Z"/>
+<path class="region" data-id="ajloun" fill="#f39b83" d="M128 105 L180 137 L190 192 L143 214 L104 176Z"/>
+<path class="region" data-id="jerash" fill="#c9a7df" d="M180 137 L255 145 L260 193 L208 213 L190 192Z"/>
+<path class="region" data-id="mafraq" fill="#91c9df" d="M285 48 L365 68 L408 155 L390 275 L318 292 L260 193 L255 145 L300 108Z"/>
+<path class="region" data-id="balqa" fill="#a8d6a0" d="M104 176 L143 214 L170 263 L128 300 L84 270 L75 220Z"/>
+<path class="region" data-id="zarqa" fill="#e8a8c1" d="M208 213 L260 193 L318 292 L280 350 L218 325 L170 263Z"/>
+<path class="region" data-id="madaba" fill="#f4bd86" d="M84 270 L128 300 L158 354 L122 389 L75 360 L65 315Z"/>
+<path class="region" data-id="amman" fill="#b5b4e8" d="M128 300 L170 263 L218 325 L280 350 L250 426 L178 433 L122 389 L158 354Z"/>
+<path class="region" data-id="karak" fill="#e6d18a" d="M122 389 L178 433 L205 488 L160 520 L105 475 L88 420Z"/>
+<path class="region" data-id="tafilah" fill="#a7d9cf" d="M105 475 L160 520 L172 570 L135 596 L92 545Z"/>
+<path class="region" data-id="maan" fill="#d5b5a0" d="M178 433 L250 426 L280 480 L255 590 L172 570 L160 520 L205 488Z"/>
+<path class="region" data-id="aqaba" fill="#82c7b2" d="M92 545 L135 596 L172 570 L255 590 L220 650 L170 666 L125 628Z"/>
+</g>
+<path class="country-edge" d="M145 42 L285 48 L365 68 L408 155 L390 275 L318 292 L280 350 L250 426 L280 480 L255 590 L220 650 L170 666 L125 628 L92 545 L88 420 L65 315 L75 220 L104 176 L128 105Z"/>
+<text x="345" y="335" font-size="18" fill="#7195a0" opacity=".8" transform="rotate(90 345 335)">الأردن</text>
+<text x="40" y="220" font-size="13" fill="#7195a0">البحر الميت</text>
+<text x="260" y="680" font-size="13" fill="#7195a0">خليج العقبة</text>
+</svg>
+<div class="feedback" id="feedback" aria-live="polite">يلا يا نشمية! اختاري أول محافظة 🌟</div>
+</section>
+</div>
+<p class="footer">نشاط تعليمي تفاعلي للصف الخامس • خريطة تخطيطية مبسطة للتدريب على مواقع المحافظات</p>
+</div>
+<div id="confetti"></div>
+<div class="modal" id="finish">
+<div class="modalbox">
+<h2>🏆 أحسنتِ يا نشمية! 🏆</h2>
+<p>أكملتِ تحدّي محافظات الأردن بنجاح!<br><strong>12 من 12 نجمة ⭐</strong></p>
+<button class="action" id="again">العبِي مرة ثانية</button>
+</div>
+</div>
+<script>
+const govs=[
+{id:'irbid',name:'إربد'},{id:'ajloun',name:'عجلون'},{id:'jerash',name:'جرش'},
+{id:'mafraq',name:'المفرق'},{id:'balqa',name:'البلقاء'},{id:'zarqa',name:'الزرقاء'},
+{id:'madaba',name:'مادبا'},{id:'amman',name:'العاصمة عمّان'},{id:'karak',name:'الكرك'},
+{id:'tafilah',name:'الطفيلة'},{id:'maan',name:'معان'},{id:'aqaba',name:'العقبة'}
+];
+let selected=null,score=0,soundOn=true,dragged=null;
+const cards=document.getElementById('cards'),feedback=document.getElementById('feedback');
+function shuffle(a){return [...a].sort(()=>Math.random()-.5)}
+function renderCards(){
+ cards.innerHTML='';
+ shuffle(govs).forEach(g=>{
+  const b=document.createElement('button');b.className='card';b.textContent=g.name;b.dataset.id=g.id;b.draggable=true;
+  b.addEventListener('click',()=>selectCard(b));
+  b.addEventListener('dragstart',e=>{dragged=b;e.dataTransfer.setData('text/plain',g.id);});
+  cards.appendChild(b);
+ });
+}
+function selectCard(b){
+ if(b.classList.contains('done'))return;
+ document.querySelectorAll('.card').forEach(x=>x.classList.remove('selected'));
+ selected=b;b.classList.add('selected');
+ feedback.textContent='ممتاز! الآن اختاري مكان '+b.textContent+' على الخريطة.';
+}
+let audioCtx=null,musicTimer=null,musicStep=0,musicStarted=false;
+function getAudio(){
+ const C=window.AudioContext||window.webkitAudioContext;if(!C)return null;
+ if(!audioCtx)audioCtx=new C();if(audioCtx.state==='suspended')audioCtx.resume();return audioCtx;
+}
+function clap(){
+ const c=getAudio();if(!c)return;
+ for(let k=0;k<18;k++){
+  const duration=.045+Math.random()*.055,buffer=c.createBuffer(1,Math.floor(c.sampleRate*duration),c.sampleRate),data=buffer.getChannelData(0);
+  for(let i=0;i<data.length;i++)data[i]=(Math.random()*2-1)*Math.pow(1-i/data.length,2);
+  const src=c.createBufferSource(),gain=c.createGain(),filter=c.createBiquadFilter();src.buffer=buffer;
+  filter.type='highpass';filter.frequency.value=900+Math.random()*1500;
+  const t=c.currentTime+k*.055;gain.gain.setValueAtTime(.0001,t);gain.gain.exponentialRampToValueAtTime(.12,t+.008);
+  gain.gain.exponentialRampToValueAtTime(.0001,t+duration);src.connect(filter);filter.connect(gain);gain.connect(c.destination);src.start(t);
+ }
+}
+function chime(correct){
+ const c=getAudio();if(!c)return;const notes=correct?[659,784,988]:[220,196];
+ notes.forEach((freq,i)=>{const o=c.createOscillator(),g=c.createGain(),t=c.currentTime+i*.12;o.type='sine';o.frequency.value=freq;
+  o.connect(g);g.connect(c.destination);g.gain.setValueAtTime(.0001,t);g.gain.exponentialRampToValueAtTime(.09,t+.02);
+  g.gain.exponentialRampToValueAtTime(.0001,t+.28);o.start(t);o.stop(t+.3);});
+}
+function sound(correct){
+ if(!soundOn)return;if(correct){clap();chime(true);}else chime(false);
+ if(correct&&'speechSynthesis'in window){const u=new SpeechSynthesisUtterance('أحسنت يا نشمية');u.lang='ar';u.rate=.9;window.speechSynthesis.cancel();window.speechSynthesis.speak(u);}
+}
+// لحن آلي أصلي بطابع أردني/شامي خفيف، وليس تسجيلاً لأغنية تجارية.
+const folkNotes=[392,440,494,523,494,440,392,330,392,440,494,587,523,494,440,392];
+function playMusicNote(){
+ if(!soundOn||!audioCtx)return;const c=audioCtx,f=folkNotes[musicStep%folkNotes.length],t=c.currentTime;
+ const o=c.createOscillator(),g=c.createGain();o.type='triangle';o.frequency.value=f;
+ g.gain.setValueAtTime(.0001,t);g.gain.exponentialRampToValueAtTime(.035,t+.04);g.gain.exponentialRampToValueAtTime(.0001,t+.34);
+ o.connect(g);g.connect(c.destination);o.start(t);o.stop(t+.36);
+ if(musicStep%2===0){const bass=c.createOscillator(),bg=c.createGain();bass.type='sine';bass.frequency.value=[196,220,165,196][Math.floor(musicStep/2)%4];
+  bg.gain.setValueAtTime(.0001,t);bg.gain.exponentialRampToValueAtTime(.018,t+.03);bg.gain.exponentialRampToValueAtTime(.0001,t+.3);
+  bass.connect(bg);bg.connect(c.destination);bass.start(t);bass.stop(t+.32);}
+ musicStep++;
+}
+function startMusic(){if(!soundOn||musicStarted)return;if(!getAudio())return;musicStarted=true;playMusicNote();musicTimer=setInterval(playMusicNote,390);}
+function stopMusic(){if(musicTimer)clearInterval(musicTimer);musicTimer=null;musicStarted=false;}
+document.addEventListener('pointerdown',()=>{if(soundOn)startMusic();},{once:true});
+
+function confetti(){
+ const box=document.getElementById('confetti');box.innerHTML='';
+ for(let i=0;i<55;i++){const d=document.createElement('i');d.className='conf';d.style.left=Math.random()*100+'%';d.style.background=['#f4bd42','#1c9b91','#f17b86','#7c9ce8'][i%4];d.style.animationDelay=Math.random()*.5+'s';box.appendChild(d);}
+ setTimeout(()=>box.innerHTML='',2300);
+}
+function update(){
+ document.getElementById('progress').textContent='⭐ '+score+' من 12';
+ document.getElementById('score').textContent='الإجابات الصحيحة: '+score;
+}
+function dropOn(region){
+ if(!selected){feedback.textContent='اختاري بطاقة محافظة أولاً 😊';return;}
+ const target=region.dataset.id;
+ if(target===selected.dataset.id){
+  region.classList.add('correct');region.style.fill='#8bd2a2';
+  const label=document.createElementNS('http://www.w3.org/2000/svg','text');
+  const bb=region.getBBox();label.setAttribute('x',bb.x+bb.width/2);label.setAttribute('y',bb.y+bb.height/2+5);label.setAttribute('class','zone-label');label.textContent=selected.textContent;region.parentNode.appendChild(label);
+  selected.classList.add('done');selected.classList.remove('selected');selected=null;score++;update();sound(true);confetti();
+  feedback.textContent='👏 أحسنتِ يا نشمية! إجابة صحيحة ⭐';
+  if(score===12)setTimeout(()=>{document.getElementById('finish').classList.add('show');if(soundOn){clap();setTimeout(clap,550);}},800);
+ }else{
+  sound(false);feedback.textContent='قريبة! حاولي مرة ثانية يا نشمية 💛';
+  region.animate([{filter:'brightness(1)'},{filter:'brightness(.78)'},{filter:'brightness(1)'}],{duration:350});
+ }
+}
+document.querySelectorAll('.region').forEach(r=>{
+ r.addEventListener('click',()=>dropOn(r));
+ r.addEventListener('dragover',e=>e.preventDefault());
+ r.addEventListener('drop',e=>{e.preventDefault();const id=e.dataTransfer.getData('text/plain');const b=[...document.querySelectorAll('.card')].find(x=>x.dataset.id===id);if(b&&!b.classList.contains('done')){selectCard(b);dropOn(r);}});
+});
+function reset(){
+ score=0;selected=null;document.querySelectorAll('.region').forEach(r=>{r.classList.remove('correct');r.style.fill='';});
+ document.querySelectorAll('.zone-label').forEach(x=>x.remove());
+ document.getElementById('finish').classList.remove('show');feedback.textContent='يلا يا نشمية! اختاري أول محافظة 🌟';update();renderCards();
+}
+document.getElementById('resetBtn').onclick=reset;document.getElementById('again').onclick=reset;
+document.getElementById('soundBtn').onclick=()=>{
+ soundOn=!soundOn;
+ if(soundOn){startMusic();document.getElementById('soundBtn').textContent='🔊 الصوت والموسيقى يعملان';}
+ else{stopMusic();if('speechSynthesis'in window)window.speechSynthesis.cancel();document.getElementById('soundBtn').textContent='🔇 الصوت والموسيقى مغلقان';}
+};
+renderCards();update();
+</script>
+</body></html>
